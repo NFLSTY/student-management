@@ -1,0 +1,26 @@
+# --- Dependency & Package Manager ---
+node_modules/
+.pnpm-debug.log*
+
+# --- Build Outputs ---
+dist/
+build/
+.cache/
+
+# --- Environment Variables (Kunci Rahasia) ---
+.env
+.env.local
+.env.*.local
+
+# --- IDE & Editor Files ---
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# --- Operating System Files ---
+.DS_Store
+Thumbs.db

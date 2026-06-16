@@ -1,0 +1,27 @@
+{
+  "name": "student-management",
+  "version": "1.0.0",
+  "private": true,
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start:fe": "pnpm --filter frontend dev",
+    "start:be": "pnpm --filter backend start:dev",
+    "dev": "concurrently -n \"React,NestJS\" -c \"cyan,red\" \"pnpm start:fe\" \"pnpm start:be\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "11.7.0",
+      "onFail": "download"
+    }
+  },
+  "type": "module",
+  "devDependencies": {
+    "concurrently": "^10.0.3"
+  }
+}
