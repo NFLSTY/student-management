@@ -1,5 +1,9 @@
 packages:
   - 'frontend'
   - 'backend'
+
 allowBuilds:
   unrs-resolver: false
+
+storeDir: 
+  .pnpm-store
