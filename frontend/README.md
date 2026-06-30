@@ -1,73 +1,53 @@
-# React + TypeScript + Vite
+# Frontend - Amikom Student Management
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+The frontend user interface for the Amikom Student Management system. Built with React, TypeScript, and Vite, it offers a blazing-fast development experience and a modern UI customized with Amikom's brand colors.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 📂 Structure Overview
 
-## React Compiler
+The frontend codebase is organized to keep components and API layers decoupled:
+- `src/App.tsx`: The main React application component and layout.
+- `src/index.css`: Global styles, CSS variables, and design tokens (Amikom theme).
+- `src/App.css`: Component-specific styling like cards, grids, and form overlays.
+- `src/components/`: Reusable UI components:
+  - `StudentCard.tsx`: Visual display for an individual student.
+  - `StudentForm.tsx`: Form for creating or editing student data.
+- `src/services/api.ts`: API integration layer using Axios to communicate with the NestJS backend.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+## 🛠️ Setup & Preparation
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### 1. Prerequisites
+There are no additional local files like `.env` required by default for the frontend. The API URL is configured in `src/services/api.ts` to point to `http://localhost:3000/students`. Make sure the backend server is running on that port.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### 2. Dependencies
+Dependencies are managed via pnpm at the root level, but you can also install them directly in this folder if working in isolation:
+```bash
+pnpm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## 💻 Running the Application
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### Via Workspace Root (Recommended)
+You can run both backend and frontend concurrently from the root of the monorepo:
+```bash
+cd ..
+pnpm dev
 ```
+
+### Locally (Frontend Only)
+To run just the React development server:
+
+```bash
+# Start the Vite development server with Hot-Module-Reload
+$ pnpm dev
+
+# Build for production
+$ pnpm build
+```
+
+The application will be accessible at `http://localhost:5173`.
