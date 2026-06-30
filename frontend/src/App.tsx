@@ -1,35 +1,12 @@
 //
 // COMPLETE STUDENT MANAGEMENT APP
 //
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { studentsApi } from './services/api';
 import { StudentCard } from './components/StudentCard';
 import { StudentForm } from './components/StudentForm';
 import './App.css';
-//
-// INTERFACES
-//
-interface Student {
-  id: string; // Unique identifier
-  name: string;
-  nim: string;
-  email: string;
-  class: string;
-  year: number;
-  gpa: number;
-  status: 'active' | 'graduated' | 'dropout';
-  createdAt: Date; // Timestamp
-}
-interface StudentFormData {
-  // Same as Student tapi without id & createdAt
-  // Untuk form input (user tidak input id & createdAt)
-  name: string;
-  nim: string;
-  email: string;
-  class: string;
-  year: number;
-  gpa: number;
-  status: 'active' | 'graduated' | 'dropout';
-}
+
 //
 // MAIN APP COMPONENT
 //
@@ -38,115 +15,107 @@ function App() {
   // STATE
   //
   // List of students
-  const [students, setStudents] = useState<Student[]>([
-    // Initial mock data
-    {
-      id: '1',
-      name: 'Ahmad Santoso',
-      nim: '23.11.5001',
-      email: 'ahmad@student.amikom.ac.id',
-      class: 'IF-A',
-      year: 2023,
-      gpa: 3.75,
-      status: 'active',
-      createdAt: new Date('2023-09-01'),
-    },
-    {
-      id: '2',
-      name: 'Siti Nurhaliza',
-      nim: '23.11.5002',
-      email: 'siti@student.amikom.ac.id',
-      class: 'IF-B',
-      year: 2023,
-      gpa: 3.92,
-      status: 'active',
-      createdAt: new Date('2023-09-01'),
-    },
-    {
-      id: '3',
-      name: 'Budi Setiawan',
-      nim: '22.11.5015',
-      email: 'budi@student.amikom.ac.id',
-      class: 'IF-A',
-      year: 2022,
-      gpa: 3.45,
-      status: 'active',
-      createdAt: new Date('2022-09-01'),
-    },
-  ]);
+  const [students, setStudents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   // UI state: show/hide add form
   const [showAddForm, setShowAddForm] = useState(false);
   // UI state: which student is being edited
-  const [editingStudent, setEditingStudent] = useState<Student | null>(null);
+  const [editingStudent, setEditingStudent] = useState(null);
   // null = tidak ada yang di-edit
   // Student object = ada yang di-edit
+
+  //
+  // FETCH ON MOUNT
+  //
+  useEffect(() => {
+    const fetchStudents = async () => {
+      try {
+        // START LOADING
+        setLoading(true);
+        setError(null); // Clear previous errors
+        // FETCH
+        const response = await studentsApi.getAll();
+        // SUCCESS
+        setStudents(response.data);
+      } catch (err) {
+        // ERROR
+        console.error('Error:', err);
+        setError('Failed to load students. Please try again.');
+      } finally {
+        // ALWAYS RUN (success or error)
+        setLoading(false);
+      }
+    };
+    fetchStudents();
+  }, []);
+
+  //
+  // CONDITIONAL RENDERING
+  //
+  // Loading state
+  if (loading) {
+    return <div className="loading">Loading students...</div>;
+  }
+  // Error state
+  if (error) {
+    return (
+      <div className="error">
+        <h2>Error</h2>
+        <p>{error}</p>
+        <button onClick={() => window.location.reload()}>Retry</button>
+      </div>
+    );
+  }
+
   //
   // CRUD OPERATIONS
   //
   //
   // CREATE - Add New Student
   //
-  const handleAddStudent = (studentData: StudentFormData) => {
-    // Create complete Student object
-    const newStudent: Student = {
-      id: Date.now().toString(),
-      // Simple ID generation: timestamp
-      // Example: "1708424567890"
-      // In real app: use UUID or database-generated ID
-      ...studentData,
-      // Spread all fields from form data
-      // name, nim, email, class, year, gpa, status
-      createdAt: new Date(),
-      // Current timestamp
-    };
-    // Add to students array (immutable way)
-    setStudents([...students, newStudent]);
-    // [...students, newStudent] creates NEW array
-    // Old array: [{id:1}, {id:2}, {id:3}]
-    // New array: [{id:1}, {id:2}, {id:3}, {id:4}]
-    // Close form
-    setShowAddForm(false);
-    // Optional: Show success message
-    alert(`Student ${newStudent.name} added successfully!`);
+  const handleAddStudent = async (studentData: unknown) => {
+    try {
+      const response = await studentsApi.create(studentData);
+      // Create complete Student object
+      setStudents([...students, response.data]);
+      // [...students, newStudent] creates NEW array
+      // Close form
+      setShowAddForm(false);
+      // Optional: Show success message
+      alert(`Student added successfully!`);
+    } catch (error) {
+      alert('Failed to add student');
+      console.error(error);
+    }
   };
+
   //
   // READ - Already handled by rendering students.map()
   //
+
   //
   // UPDATE - Edit Existing Student
   //
-  const handleEditStudent = (id: string, updates: StudentFormData) => {
-    // Update students array (immutable way)
-    setStudents(
-      students.map((student) => {
-        // Loop through all students
-        if (student.id === id) {
-          // This is the student to update
-          return {
-            ...student, // Keep existing fields (id, createdAt)
-            ...updates, // Override with new data
-          };
-          // Example:
-          // student = { id: '1', name: 'John', gpa: 3.5, createdAt: ... }
-          // updates = { name: 'Johnny', gpa: 3.75, ... }
-          // Result: { id: '1', name: 'Johnny', gpa: 3.75, createdAt: ... }
-        } else {
-          // Not the one to update, keep as is
-          return student;
-        }
-      }),
-    );
-    // Shorter version (ternary):
-    setStudents(students.map((s) => (s.id === id ? { ...s, ...updates } : s)));
-    // Close edit form
-    setEditingStudent(null);
-    // Show success message
-    alert('Student updated successfully!');
+  const handleEditStudent = async (id: string, updates: unknown) => {
+    try {
+      const response = await studentsApi.update(id, updates);
+      // Shorter version (ternary):
+      setStudents(students.map((s) => (s._id === id ? response.data : s)));
+      // Close edit form
+      setEditingStudent(null);
+      // Show success message
+      alert('Student updated successfully!');
+    } catch (error) {
+      alert('Failed to update student');
+      console.error(error);
+    }
   };
+
   //
   // DELETE - Remove Student
   //
-  const handleDeleteStudent = (id: string) => {
+  const handleDeleteStudent = async (id: string) => {
     // Confirmation dialog
     const confirmed = window.confirm(
       'Are you sure you want to delete this student?\n\n' +
@@ -157,22 +126,16 @@ function App() {
       return; // Stop execution
     }
     // User clicked OK, proceed with delete
-    setStudents(
-      students.filter((student) => student.id !== id),
-      // filter creates NEW array
-      // Keep only students where id !== id to delete
-      // Example:
-      // students = [{id:'1'}, {id:'2'}, {id:'3'}]
-      // Delete id='2'
-      // filter(s => s.id !== '2')
-      // Iteration 1: {id:'1'} → '1' !== '2' → true → KEEP
-      // Iteration 2: {id:'2'} → '2' !== '2' → false → REMOVE
-      // Iteration 3: {id:'3'} → '3' !== '2' → true → KEEP
-      // Result: [{id:'1'}, {id:'3'}]
-    );
-    // Show success message
-    alert('Student deleted successfully!');
+    try {
+      await studentsApi.delete(id);
+      setStudents(students.filter((s) => s._id !== id));
+      alert('Student deleted!');
+    } catch (error) {
+      alert('Student deleted successfully!');
+      console.error(error);
+    }
   };
+
   //
   // HELPER FUNCTIONS
   //
@@ -186,9 +149,13 @@ function App() {
     // Start with 0, add each student's GPA
     return (total / students.length).toFixed(2);
   };
+
   //
   // RENDER
   //
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
+
   return (
     <div className="app">
       {/*        */}
@@ -241,7 +208,7 @@ function App() {
           <div className="students-grid">
             {students.map((student) => (
               <StudentCard
-                key={student.id}
+                key={student._id}
                 // key WAJIB untuk list!
                 // Must be unique & stable
                 {...student}
@@ -253,7 +220,7 @@ function App() {
                 // etc.
                 onEdit={() => setEditingStudent(student)}
                 // Arrow function: pass student object to edit
-                onDelete={() => handleDeleteStudent(student.id)}
+                onDelete={() => handleDeleteStudent(student._id)}
                 // Arrow function: pass student ID to delete
               />
             ))}
@@ -279,7 +246,7 @@ function App() {
         <StudentForm
           initialData={editingStudent}
           // Pass student data untuk pre-fill form
-          onSubmit={(updates) => handleEditStudent(editingStudent.id, updates)}
+          onSubmit={(updates) => handleEditStudent(editingStudent._id, updates)}
           // Arrow function: pass student ID + updates
           onClose={() => setEditingStudent(null)}
         />
