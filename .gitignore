@@ -1,13 +1,14 @@
 # --- Dependency & Package Manager ---
 node_modules/
 .pnpm-debug.log*
+.pnpm-store
 
 # --- Build Outputs ---
 dist/
 build/
 .cache/
 
-# --- Environment Variables (Kunci Rahasia) ---
+# --- Environment Variables ---
 .env
 .env.local
 .env.*.local
